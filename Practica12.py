@@ -1,44 +1,46 @@
-#Programa para tomar captura de pantalla
+from bs4 import BeautifulSoup
+import requests
+import pandas as pd
 
-import pyautogui
-import tkinter as tk
-from tkinter import *
-from tkinter import messagebox, filedialog
+url="https://mexico.as.com/resultados/futbol/mexico_apertura/clasificacion/"
+page= requests.get(url)
+soup=BeautifulSoup(page.content,"html.parser")
 
-print("Pasos para la captura de pantalla\n"
-      "1:De click en navegar y ubiquese en el lugar donde desee guardar la imagen, "
-      "ingrese el nombre con el que desee guardar su captura y de click en guardar\n"
-      "2:Dirijase a la pantalla donde desea tomar la captura y de click en captura\n"
-      "Listo su imagen se ha guardado en la carpeta que usted especifico\n")
+#Equipos
 
-def Widgets():
-    etiqueta = Label(vn, text = "Guardar como: ", font = ("", 10, "bold"))
-    etiqueta.grid(row=1, column=0, pady=5, padx=5)
+eq=soup.find_all("span", class_="nombre-equipo")
 
-    vn.texto = Entry(vn, width = 30)
-    vn.texto.grid(row=1, column=1, pady=5, padx=5)
+equipos=list()
 
-    botonGuardar = Button(vn, text="Navegar", width=10, command = navegar)
-    botonGuardar.grid(row=1, column=2, pady=5, padx=5)
+count=0
+for i in eq:
+    if count<20:
+        equipos.append(i.text)
+    else:
+        break
+    count+=1
+print(eq)
+print("\n")
 
-    botonCaptura = Button(vn, text="Captura", width=10, command = captura)
-    botonCaptura.grid(row=2, column=1, pady=5, padx=5)
+#Puntos
 
-def navegar():
-    vn.archivo = filedialog.asksaveasfilename(title = "Guardar como",
-                                                    defaultextension = ".png",
-                                                    filetypes =(("Archivo Png", "*.png"),("Todos los Archivos","*.*")))
-    vn.texto.insert("1", vn.archivo)
+pt=soup.find_all("td", class_="destacado")
 
-def captura():
-    captura = pyautogui.screenshot()
+puntos=list()
 
-    captura.save(vn.archivo)
-    messagebox.showinfo("Practica 11","Captura Guardada")
+count=0
+for i in pt:
+    if count<20:
+        puntos.append(i.text)
+    else:
+        break
+    count+=1
+print(pt)
+print("\n")
 
-vn=tk.Tk()
-vn.title("Captura de Pantalla")
-Widgets()
-vn.mainloop()
+df=pd.DataFrame({'Nombre':equipos,'Puntos':puntos},index=list(range(1,21)))
 
+df.to_csv("Clasificacion.csv",index=False)
 
+print("Lo que se guarda en el excel es:\n")
+print(df)
